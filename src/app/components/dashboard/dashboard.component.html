@@ -1,0 +1,95 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<a class="navbar-brand" href="#">VideoWebRTC</a>
+	<button class="navbar-toggler" type="button" (click)="collapse.toggle()">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	<div class="collapse navbar-collapse" #collapse="ngbCollapse" [(ngbCollapse)]="isCollapsed">
+		<ul class="navbar-nav mr-auto">
+			<!-- <li class="nav-item">
+				<a class="nav-link">
+					<i class="fa fa-user mr-2"></i>
+					My Profile
+				</a>
+			</li> -->
+			<li class="nav-item">
+				<a class="nav-link" (click)="signOut()">
+					<i class="fa fa-sign-out mr-2"></i>
+					Sign Out
+				</a>
+			</li>
+		</ul>
+		<form class="user-logo form-inline my-2 my-lg-0" *ngIf="authService.userData as user">
+			<img class="img rounded-circle mr-2" src="{{user.photoURL ? user.photoURL : '/assets/dummy-user.png'}}">
+			<span>{{ user.displayName }}</span>
+			<!-- <p>User ID: <strong>{{user.uid}}</strong></p>
+            <p>Email: <strong>{{user.email}}</strong></p>
+            <p class="mb-0">Email Verified: <strong>{{user.emailVerified}}</strong></p> -->
+		</form>
+	</div>
+</nav>
+<div class="container">
+    <div class="title-number justify-content-center align-items-center col-12 py-4 px-0">
+        <div class="alert alert-success text-align-center m-0">
+            <h4 class="mb-0"><span class="number">{{ myNumber }}</span> is your phone number</h4>
+        </div>
+        <div class="alert alert-danger m-0 mt-2" *ngIf="errorMessage?.length">
+            {{ errorMessage }}
+        </div>
+        <div class="alert alert-info m-0 mt-2" *ngIf="infoMessage?.length">
+            {{ infoMessage }}
+        </div>
+    </div>
+	<div class="main-body d-flex flex-wrap">
+        <div class="main col-xl-8 pl-xl-0 pr-xl-3 col-lg-8 pl-lg-0 pr-lg-3 col-12 p-0 pb-3 border-right">
+            <h5 class="alert alert-primary d-flex align-items-center">
+                <i class="far fa-video mr-2"></i>
+                Video
+            </h5>
+            <div class="dialer d-flex">
+                <div class="input-group mr-2">
+                    <div class="input-group-prepend">
+                      <div class="input-group-text"><i class="far fa-phone-office"></i></div>
+                    </div>
+                    <input type="number" class="form-control" placeholder="Call Number" [(ngModel)]="callNumber" required>
+                </div>
+                <button type="button" class="btn btn-primary mr-2" (click)="callButton(callNumber)" 
+                    [disabled]="!callNumber || peerConnected || callNumber === myNumber">
+                    <i class="far fa-phone mr-1"></i> Call
+                </button>
+                <button type="button" class="btn btn-danger" (click)="hangUp()" 
+                    [disabled]="!peerConnected">
+                    <i class="far fa-phone-slash mr-1"></i> Hangup
+                </button>
+            </div>
+            <div class="videos mt-3" [hidden]="!peerConnected" #fullScreen>
+                <div class="local-video">
+                    <video class="rounded" #localStream autoplay playsinline></video>
+                </div>
+                <div class="remote-video">
+                    <video class="rounded" #remoteStream autoplay playsinline></video>
+                </div>
+                <div class="actions">
+                    <div class="btn btn-primary rounded-circle mr-3" (click)="openFullscreen()"><i class="far fa-expand"></i></div>
+                    <div class="btn btn-danger rounded-circle" (click)="hangUp()" ><i class="far fa-phone-slash"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="chat col-xl-4 pl-xl-3 pr-xl-0 col-lg-4 pl-lg-3 pr-lg-0 col-12 p-0 pb-3">
+            <h5 class="alert alert-primary d-flex align-items-center">
+                <i class="far fa-comment-alt mr-2"></i>
+                Chat 
+                <div class="text-success ml-2" *ngIf="peerConnected">Call Connected to {{ callerNumber?.length ? callerNumber : connectedCallNumber }}</div>
+            </h5>
+            <div class="form-group">
+                <input type="text" class="form-control" placeholder="Write Message" [(ngModel)]="chatMessage" *ngIf="peerConnected"
+                    (keydown.enter)="sendMessage(chatMessage, authService.userData)" required>
+            </div>
+            <div class="messages form-control" *ngIf="chatMessages.length">
+                <div class="message" [class.mb-2]="i !== chatMessages.length - 1" *ngFor="let message of chatMessages; let i = index">
+                    <span class="user"><i class="fa fa-user mr-2"></i>{{ message.user }} ({{ message.number }}) </span>
+                    <span> {{ message.text }} </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

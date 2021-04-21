@@ -1,0 +1,24 @@
+<form class="d-flex justify-content-center align-items-center flex-column login-form" novalidate>
+    <h4 class="login-logo mb-2">
+        <i class="fas fa-video mr-2"></i>
+        VideoWebRTC
+    </h4>
+    <div class="login-block">
+        <h5>Thank You for Registering</h5>
+		<div class="form-group" *ngIf="authService.userData as user">
+            <p class="text-center">We have sent a confirmation email to <strong>{{user.email}}</strong>.</p>
+            <p class="text-center">Please check your email and click on the link to verfiy your email address.</p>
+		</div>
+
+		<!-- Calling SignIn Api from AuthService -->
+		<div class="form-group">
+            <button type="button" class="btn btn-primary" [disabled]="!authService.userData" (click)="authService.SendVerificationMail(authService.userData)">
+                <i class="fas fa-redo-alt mr-1"></i>
+                Resend Verification Email
+            </button>
+		</div>
+        <div class="form-group text-center mb-0">
+            <span class="link" routerLink="/sign-in">Go Back to ? Sign In</span>
+        </div>
+	</div>
+</form>
