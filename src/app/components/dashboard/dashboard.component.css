@@ -54,8 +54,8 @@
 
 .videos .remote-video video {
     position: absolute;
-    width: 20%;
-    height: 20%;
+    width: 25%;
+    max-height: 25%;
     border: 4px solid var(--yellow);
     right: 20px;
     bottom: 25px;

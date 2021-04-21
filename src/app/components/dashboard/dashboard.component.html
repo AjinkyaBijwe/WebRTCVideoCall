@@ -63,10 +63,10 @@
             </div>
             <div class="videos mt-3" [hidden]="!peerConnected" #fullScreen>
                 <div class="local-video">
-                    <video class="rounded" #localStream autoplay playsinline></video>
+                    <video class="rounded" #remoteVideoStream autoplay playsinline></video>
                 </div>
                 <div class="remote-video">
-                    <video class="rounded" #remoteStream autoplay playsinline></video>
+                    <video class="rounded" #localVideoStream autoplay playsinline></video>
                 </div>
                 <div class="actions">
                     <div class="btn btn-primary rounded-circle mr-3" (click)="openFullscreen()"><i class="far fa-expand"></i></div>

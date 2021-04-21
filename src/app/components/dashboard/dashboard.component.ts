@@ -20,11 +20,11 @@ export class DashboardComponent implements OnInit {
     connectedCallNumber: number;
     callerNumber: string = '';
     peerConnected: boolean = false;
-    @ViewChild('localStream', { static: false })
-    localStream: ElementRef;
-    @ViewChild('remoteStream', { static: false })
-    remoteStream: ElementRef;
-    @ViewChild('fullScreen', { static: false })
+    @ViewChild('localVideoStream', { static: true })
+    localVideoStream: ElementRef;
+    @ViewChild('remoteVideoStream', { static: true })
+    remoteVideoStream: ElementRef;
+    @ViewChild('fullScreen', { static: true })
     fullScreen: ElementRef;
     peer: Peer;
     errorMessage: string = '';
@@ -48,7 +48,7 @@ export class DashboardComponent implements OnInit {
             })
         }
         this.generateNumber();
-        this.checkIncomingCall()
+        this.checkIncomingCall();
 	}
 
     checkIncomingCall() {
@@ -75,15 +75,14 @@ export class DashboardComponent implements OnInit {
         })
 
         // Call User Listen
-        const getUserMedia = navigator.getUserMedia;
         this.peer.on('call', (call) => {
             this.receivingMediaConnection = call;
-        	getUserMedia({ video: true, audio: true }, (stream) => {
+        	navigator.getUserMedia({ video: true, audio: true }, (myStream) => {
+                this.localVideoStream.nativeElement.srcObject = myStream;
                 this.callerNumber = call.peer;
-        		call.answer(stream);
+        		call.answer(myStream);
         		call.on('stream', (remoteStream) => {
-                    this.localStream.nativeElement.srcObject = stream;
-        			this.remoteStream.nativeElement.srcObject = remoteStream;
+        			this.remoteVideoStream.nativeElement.srcObject = remoteStream;
         		});
                 call.on('close', () => {
                     this.hangUpAfterEvent('Receiving Call Closed', false);
@@ -121,22 +120,21 @@ export class DashboardComponent implements OnInit {
         this.activeDataConnection.on('error', () => {
             this.hangUpAfterEvent('Peer Connection Error', true);
         });
-        navigator.getUserMedia({video: true, audio: true}, (stream) => {
-            this.activeMediaConnection = this.peer.call(callNumber, stream);
-                this.activeMediaConnection.on('stream', (remoteStream) => {
-                    this.localStream.nativeElement.srcObject = stream;
-                    this.remoteStream.nativeElement.srcObject = remoteStream;
-                });
-                this.activeMediaConnection.on('close', () => {
-                    this.hangUpAfterEvent('Active Call Closed', false);
-                })
-                this.activeMediaConnection.on('error', () => {
-                    this.hangUpAfterEvent('Active Call Error', true);
-                })
-            }, (err) => {
-                this.hangUpAfterEvent('Failed to get local stream', true);
-            }
-        );
+        navigator.getUserMedia({video: true, audio: true}, (myStream) => {
+            this.localVideoStream.nativeElement.srcObject = myStream;
+            this.activeMediaConnection = this.peer.call(callNumber, myStream);
+            this.activeMediaConnection.on('stream', (remoteStream) => {
+                this.remoteVideoStream.nativeElement.srcObject = remoteStream;
+            });
+            this.activeMediaConnection.on('close', () => {
+                this.hangUpAfterEvent('Active Call Closed', false);
+            });
+            this.activeMediaConnection.on('error', () => {
+                this.hangUpAfterEvent('Active Call Error', true);
+            });
+        }, (err) => {
+            this.hangUpAfterEvent('Failed to get local stream', true);
+        });
 	}
 
     hangUp() {
@@ -152,9 +150,9 @@ export class DashboardComponent implements OnInit {
         if (this.receivingMediaConnection) {
             this.receivingMediaConnection.close();
         }
+        this.localVideoStream.nativeElement.srcObject = null;
+        this.remoteVideoStream.nativeElement.srcObject = null;
         this.peerConnected = false;
-        this.localStream.nativeElement.srcObject = null;
-        this.remoteStream.nativeElement.srcObject = null;
     }
 
 	sendMessage(text: string, user: any) {
