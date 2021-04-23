@@ -99,7 +99,15 @@ export class DashboardComponent implements OnInit {
     generateNumber() {
         this.myNumber = (Math.floor(Math.random()*90000) + 10000);
         const myNumber = this.myNumber.toString();
-        this.peer = new Peer(myNumber);
+        this.peer = new Peer(myNumber, {
+            secure: true,
+            config: {
+                iceServers: [{
+                    urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+                }],
+                iceCandidatePoolSize: 10,
+            }
+        });
     }
 
 	callButton(requestCallNumber: any) {
