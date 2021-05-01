@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
     callNumber: number;
     connectedCallNumber: number;
     callerNumber: string = '';
-    peerConnected: boolean = false;
+    callConnected: boolean = false;
     @ViewChild('localVideoStream', { static: true })
     localVideoStream: ElementRef;
     @ViewChild('remoteVideoStream', { static: true })
@@ -37,6 +37,7 @@ export class DashboardComponent implements OnInit {
     infoTimeout: any;
     hasFullscreenSupport: boolean;
     isFullscreen: any;
+    incomingCall: boolean;
 
 	constructor(public authService: AuthService, public afAuth: AngularFireAuth, public router: Router) {}
 
@@ -48,18 +49,16 @@ export class DashboardComponent implements OnInit {
             })
         }
         this.generateNumber();
-        this.checkIncomingCall();
+        this.checkincomingCall();
 	}
 
-    checkIncomingCall() {
+    checkincomingCall() {
         this.peer.on('connection', (conn) => {
             this.receivingDataConnection = conn;
             conn.on('data', (data) => {
                 this.chatMessages.unshift(data);
             });
-            conn.on('open', () => {
-                this.peerConnected = true;
-            })
+            // conn.on('open', () => {})
             conn.on('close', ()=> {
                 this.hangUpAfterEvent('Call Disconnected by User', false);
             })
@@ -77,22 +76,7 @@ export class DashboardComponent implements OnInit {
         // Call User Listen
         this.peer.on('call', (call) => {
             this.receivingMediaConnection = call;
-        	navigator.getUserMedia({ video: true, audio: true }, (myStream) => {
-                this.localVideoStream.nativeElement.srcObject = myStream;
-                this.callerNumber = call.peer;
-        		call.answer(myStream);
-        		call.on('stream', (remoteStream) => {
-        			this.remoteVideoStream.nativeElement.srcObject = remoteStream;
-        		});
-                call.on('close', () => {
-                    this.hangUpAfterEvent('Receiving Call Closed', false);
-                })
-                call.on('error', () => {
-                    this.hangUpAfterEvent('Receiving Call Error', true);
-                })
-        	}, (err) => {
-                this.hangUpAfterEvent('Failed to get Remote Stream', true);
-        	});
+            this.incomingCall = true;
         });
     }
 
@@ -119,8 +103,8 @@ export class DashboardComponent implements OnInit {
             this.chatMessages.unshift(data);
         });
         this.activeDataConnection.on('open', () => {
-            this.peerConnected = true;
             this.connectedCallNumber = requestCallNumber;
+            this.callConnected = true;
         });
         this.activeDataConnection.on('close', () => {
             this.hangUpAfterEvent('User Call Ended', false);
@@ -145,6 +129,28 @@ export class DashboardComponent implements OnInit {
         });
 	}
 
+    answerCall() {
+        navigator.getUserMedia({ video: true, audio: true }, (myStream) => {
+            this.callerNumber = this.receivingMediaConnection.peer;
+            this.localVideoStream.nativeElement.srcObject = myStream;
+            this.receivingMediaConnection.answer(myStream);
+            this.receivingMediaConnection.on('stream', (remoteStream) => {
+                this.incomingCall = false;
+                this.callConnected = true;
+                this.remoteVideoStream.nativeElement.srcObject = remoteStream;
+            });
+            this.receivingMediaConnection.on('close', () => {
+                this.hangUpAfterEvent('Receiving Call Closed', false);
+            })
+            this.receivingMediaConnection.on('error', () => {
+                this.incomingCall = false;
+                this.hangUpAfterEvent('Receiving Call Error', true);
+            })
+        }, (err) => {
+            this.hangUpAfterEvent('Failed to get Remote Stream', true);
+        });
+    }
+
     hangUp() {
         if (this.activeDataConnection) {
             this.activeDataConnection.close();
@@ -160,7 +166,8 @@ export class DashboardComponent implements OnInit {
         }
         this.localVideoStream.nativeElement.srcObject = null;
         this.remoteVideoStream.nativeElement.srcObject = null;
-        this.peerConnected = false;
+        this.incomingCall = false;
+        this.callConnected = false;
     }
 
 	sendMessage(text: string, user: any) {
@@ -168,10 +175,10 @@ export class DashboardComponent implements OnInit {
             const message = { text, user: user.displayName, number: this.myNumber };
 			this.chatMessages.unshift(message);
 			this.chatMessage = '';
-            if (this.peerConnected && this.activeDataConnection) {
+            if (this.callConnected && this.activeDataConnection) {
                 this.activeDataConnection.send(message);
             }
-            if (this.peerConnected && this.receivingDataConnection) {
+            if (this.callConnected && this.receivingDataConnection) {
                 this.receivingDataConnection.send(message);
             }
 		}

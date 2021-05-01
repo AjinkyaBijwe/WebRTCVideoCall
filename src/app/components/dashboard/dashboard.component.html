@@ -53,15 +53,18 @@
                     <input type="number" class="form-control" placeholder="Call Number" [(ngModel)]="callNumber" required>
                 </div>
                 <button type="button" class="btn btn-primary mr-2" (click)="callButton(callNumber)" 
-                    [disabled]="!callNumber || peerConnected || callNumber === myNumber">
+                    [disabled]="!callNumber || callConnected || callNumber === myNumber">
                     <i class="far fa-phone mr-1"></i> Call
                 </button>
-                <button type="button" class="btn btn-danger" (click)="hangUp()" 
-                    [disabled]="!peerConnected">
+                <button type="button" class="btn btn-danger mr-2" (click)="hangUp()" 
+                    [disabled]="!callConnected">
                     <i class="far fa-phone-slash mr-1"></i> Hangup
                 </button>
+                <button type="button" class="btn btn-success" (click)="answerCall()" *ngIf="incomingCall">
+                    <i class="far fa-phone-volume mr-1"></i> Answer
+                </button>
             </div>
-            <div class="videos mt-3" [hidden]="!peerConnected" #fullScreen>
+            <div class="videos mt-3" [hidden]="!callConnected" #fullScreen>
                 <div class="local-video">
                     <video class="rounded" #remoteVideoStream autoplay playsinline></video>
                 </div>
@@ -78,10 +81,10 @@
             <h5 class="alert alert-primary d-flex align-items-center">
                 <i class="far fa-comment-alt mr-2"></i>
                 Chat 
-                <div class="text-success ml-2" *ngIf="peerConnected">Call Connected to {{ callerNumber?.length ? callerNumber : connectedCallNumber }}</div>
+                <div class="text-success ml-2" *ngIf="callConnected">Call Connected to {{ callerNumber?.length ? callerNumber : connectedCallNumber }}</div>
             </h5>
             <div class="form-group">
-                <input type="text" class="form-control" placeholder="Write Message" [(ngModel)]="chatMessage" *ngIf="peerConnected"
+                <input type="text" class="form-control" placeholder="Write Message" [(ngModel)]="chatMessage" *ngIf="callConnected"
                     (keydown.enter)="sendMessage(chatMessage, authService.userData)" required>
             </div>
             <div class="messages form-control" *ngIf="chatMessages.length">
