@@ -66,7 +66,7 @@ export class DashboardComponent implements OnInit {
             this.callingAudio.play();
         }, false);
         this.messageAudio = new Audio();
-        this.messageAudio.src = environment.production ? 'https://ajinkyabijwe.github.io/WebRTCVideoCall/assets/audio/calling.mp3' : '../../../assets/audio/message.mp3';
+        this.messageAudio.src = environment.production ? 'https://ajinkyabijwe.github.io/WebRTCVideoCall/assets/audio/message.mp3' : '../../../assets/audio/message.mp3';
         this.messageAudio.load();
     }
 
