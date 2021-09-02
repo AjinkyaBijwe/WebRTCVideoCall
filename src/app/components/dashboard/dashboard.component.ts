@@ -190,9 +190,11 @@ export class DashboardComponent implements OnInit {
         if (this.receivingMediaConnection) {
             this.receivingMediaConnection.close();
         }
-        this.myCallStream.getTracks().forEach((track: any) => {
-            track.stop();
-        });
+        if (this.myCallStream?.getTracks()?.length) {
+            this.myCallStream.getTracks().forEach((track: any) => {
+                track.stop();
+            });
+        }
         this.localVideoStream.nativeElement.srcObject = null;
         this.remoteVideoStream.nativeElement.srcObject = null;
         this.incomingCall = false;
