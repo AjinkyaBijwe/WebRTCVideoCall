@@ -38,6 +38,7 @@ export class DashboardComponent implements OnInit {
     hasFullscreenSupport: boolean;
     isFullscreen: any;
     incomingCall: boolean;
+    myCallStream: any;
 
 	constructor(public authService: AuthService, public afAuth: AngularFireAuth, public router: Router) {}
 
@@ -113,6 +114,7 @@ export class DashboardComponent implements OnInit {
             this.hangUpAfterEvent('Peer Connection Error', true);
         });
         navigator.getUserMedia({video: true, audio: true}, (myStream) => {
+            this.myCallStream = myStream;
             this.localVideoStream.nativeElement.srcObject = myStream;
             this.activeMediaConnection = this.peer.call(callNumber, myStream);
             this.activeMediaConnection.on('stream', (remoteStream) => {
@@ -131,6 +133,7 @@ export class DashboardComponent implements OnInit {
 
     answerCall() {
         navigator.getUserMedia({ video: true, audio: true }, (myStream) => {
+            this.myCallStream = myStream;
             this.callerNumber = this.receivingMediaConnection.peer;
             this.localVideoStream.nativeElement.srcObject = myStream;
             this.receivingMediaConnection.answer(myStream);
@@ -164,6 +167,9 @@ export class DashboardComponent implements OnInit {
         if (this.receivingMediaConnection) {
             this.receivingMediaConnection.close();
         }
+        this.myCallStream.getTracks().forEach((track: any) => {
+            track.stop();
+        });
         this.localVideoStream.nativeElement.srcObject = null;
         this.remoteVideoStream.nativeElement.srcObject = null;
         this.incomingCall = false;
