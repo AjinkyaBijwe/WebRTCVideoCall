@@ -1,7 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Router } from '@angular/router';
-import { AuthService } from "../../shared/services/auth.service";
+import { AuthService } from '../../shared/services/auth.service';
+import { environment } from 'src/environments/environment';
 import Peer from 'peerjs';
 import fscreen from 'fscreen';
 
@@ -58,14 +59,14 @@ export class DashboardComponent implements OnInit {
 
     loadSounds() {
         this.callingAudio = new Audio();
-        this.callingAudio.src = '../../../assets/audio/calling.mp3';
+        this.callingAudio.src = environment.production ? 'https://ajinkyabijwe.github.io/WebRTCVideoCall/assets/audio/calling.mp3' : '../../../assets/audio/calling.mp3';
         this.callingAudio.load();
         this.callingAudio.addEventListener('ended', () => {
             this.callingAudio.currentTime = 0;
             this.callingAudio.play();
         }, false);
         this.messageAudio = new Audio();
-        this.messageAudio.src = '../../../assets/audio/message.mp3';
+        this.messageAudio.src = environment.production ? 'https://ajinkyabijwe.github.io/WebRTCVideoCall/assets/audio/calling.mp3' : '../../../assets/audio/message.mp3';
         this.messageAudio.load();
     }
 
