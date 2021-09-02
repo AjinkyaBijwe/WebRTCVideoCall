@@ -88,9 +88,11 @@
                     (keydown.enter)="sendMessage(chatMessage, authService.userData)" required>
             </div>
             <div class="messages form-control" *ngIf="chatMessages.length">
-                <div class="message" [class.mb-2]="i !== chatMessages.length - 1" *ngFor="let message of chatMessages; let i = index">
-                    <span class="user"><i class="fa fa-user mr-2"></i>{{ message.user }} ({{ message.number }}) </span>
-                    <span> {{ message.text }} </span>
+                <div class="message" [class.mb-2]="i !== chatMessages.length - 1" *ngFor="let message of chatMessages; let i = index" [class]="message.class">
+                    <div class="message-body">
+                        <span class="user"><i class="fa fa-user mr-2"></i>{{ message.user }} ({{ message.number }}) </span>
+                        <span> {{ message.text }} </span>
+                    </div>
                 </div>
             </div>
         </div>

@@ -39,6 +39,8 @@ export class DashboardComponent implements OnInit {
     isFullscreen: any;
     incomingCall: boolean;
     myCallStream: any;
+    callingAudio: HTMLAudioElement;
+    messageAudio: any;
 
 	constructor(public authService: AuthService, public afAuth: AngularFireAuth, public router: Router) {}
 
@@ -51,13 +53,29 @@ export class DashboardComponent implements OnInit {
         }
         this.generateNumber();
         this.checkincomingCall();
+        this.loadSounds();
 	}
+
+    loadSounds() {
+        this.callingAudio = new Audio();
+        this.callingAudio.src = '../../../assets/audio/calling.mp3';
+        this.callingAudio.load();
+        this.callingAudio.addEventListener('ended', () => {
+            this.callingAudio.currentTime = 0;
+            this.callingAudio.play();
+        }, false);
+        this.messageAudio = new Audio();
+        this.messageAudio.src = '../../../assets/audio/message.mp3';
+        this.messageAudio.load();
+    }
 
     checkincomingCall() {
         this.peer.on('connection', (conn) => {
             this.receivingDataConnection = conn;
             conn.on('data', (data) => {
+                data.class = 'received-message';
                 this.chatMessages.unshift(data);
+                this.messageAudio.play();
             });
             // conn.on('open', () => {})
             conn.on('close', ()=> {
@@ -78,6 +96,7 @@ export class DashboardComponent implements OnInit {
         this.peer.on('call', (call) => {
             this.receivingMediaConnection = call;
             this.incomingCall = true;
+            this.callingAudio.play();
         });
     }
 
@@ -101,7 +120,9 @@ export class DashboardComponent implements OnInit {
         this.infoMessage = '';
         this.activeDataConnection = this.peer.connect(callNumber);
         this.activeDataConnection.on('data', (data) => {
+            data.class = 'received-message';
             this.chatMessages.unshift(data);
+            this.messageAudio.play();
         });
         this.activeDataConnection.on('open', () => {
             this.connectedCallNumber = requestCallNumber;
@@ -138,6 +159,7 @@ export class DashboardComponent implements OnInit {
             this.localVideoStream.nativeElement.srcObject = myStream;
             this.receivingMediaConnection.answer(myStream);
             this.receivingMediaConnection.on('stream', (remoteStream) => {
+                this.callingAudio.pause();
                 this.incomingCall = false;
                 this.callConnected = true;
                 this.remoteVideoStream.nativeElement.srcObject = remoteStream;
@@ -178,8 +200,9 @@ export class DashboardComponent implements OnInit {
 
 	sendMessage(text: string, user: any) {
 		if (text?.length && user?.displayName?.length) {
-            const message = { text, user: user.displayName, number: this.myNumber };
+            const message = { text, user: user.displayName, number: this.myNumber, class: 'sent-message' };
 			this.chatMessages.unshift(message);
+            this.messageAudio.play();
 			this.chatMessage = '';
             if (this.callConnected && this.activeDataConnection) {
                 this.activeDataConnection.send(message);
