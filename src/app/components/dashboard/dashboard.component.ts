@@ -172,7 +172,7 @@ export class DashboardComponent implements OnInit {
                 this.incomingCall = false;
                 this.hangUpAfterEvent('Receiving Call Error', true);
             })
-        }, (err) => {
+        }, () => {
             this.hangUpAfterEvent('Failed to get Remote Stream', true);
         });
     }
