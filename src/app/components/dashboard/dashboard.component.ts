@@ -135,7 +135,7 @@ export class DashboardComponent implements OnInit {
         this.activeDataConnection.on('error', () => {
             this.hangUpAfterEvent('Peer Connection Error', true);
         });
-        navigator.getUserMedia({video: true, audio: true}, (myStream) => {
+        navigator.getUserMedia({video: true, audio: true}, (myStream: MediaStream) => {
             this.myCallStream = myStream;
             this.localVideoStream.nativeElement.srcObject = myStream;
             this.activeMediaConnection = this.peer.call(callNumber, myStream);
@@ -154,7 +154,7 @@ export class DashboardComponent implements OnInit {
 	}
 
     answerCall() {
-        navigator.getUserMedia({ video: true, audio: true }, (myStream) => {
+        navigator.getUserMedia({ video: true, audio: true }, (myStream: MediaStream) => {
             this.myCallStream = myStream;
             this.callerNumber = this.receivingMediaConnection.peer;
             this.localVideoStream.nativeElement.srcObject = myStream;
@@ -192,7 +192,7 @@ export class DashboardComponent implements OnInit {
         }
         if (this.myCallStream?.getTracks()?.length) {
             this.myCallStream.getTracks().forEach((track: any) => {
-                track.stop();
+                track?.stop();
             });
         }
         this.localVideoStream.nativeElement.srcObject = null;
@@ -217,7 +217,9 @@ export class DashboardComponent implements OnInit {
 	}
 
     hangUpAfterEvent(message: string, error: boolean) {
-        this.hangUp();
+        setTimeout(() => {
+            this.hangUp();
+        }, 500);
         if (error) {
             this.errorMessage = message;
             if (this.errorTimeout) {
