@@ -27,15 +27,15 @@
 		</form>
 	</div>
 </nav>
-<div class="container">
-    <div class="title-number justify-content-center align-items-center col-12 py-4 px-0">
+<div class="container-xl">
+    <div class="title-number justify-content-center align-items-center col-12 py-3 px-0">
         <div class="alert alert-success text-align-center m-0">
             <h4 class="mb-0"><span class="number">{{ myNumber }}</span> is your phone number</h4>
         </div>
-        <div class="alert alert-danger m-0 mt-2" *ngIf="errorMessage?.length">
+        <div class="alert alert-danger m-0 mt-3" *ngIf="errorMessage?.length">
             {{ errorMessage }}
         </div>
-        <div class="alert alert-info m-0 mt-2" *ngIf="infoMessage?.length">
+        <div class="alert alert-info m-0 mt-3" *ngIf="infoMessage?.length">
             {{ infoMessage }}
         </div>
     </div>
