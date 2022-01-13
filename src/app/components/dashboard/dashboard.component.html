@@ -81,8 +81,14 @@
             <h5 class="alert alert-primary d-flex align-items-center">
                 <i class="far fa-comment-alt mr-2"></i>
                 Chat 
-                <div class="text-success ml-2" *ngIf="callConnected">Call Connected to {{ callerNumber?.length ? callerNumber : connectedCallNumber }}</div>
             </h5>
+            <h6 class="alert alert-success" *ngIf="callConnected">
+                <i class="far fa-user-alt mr-2"></i>
+                Call Connected to 
+                <span class="text-danger">
+                    {{callerNumber?.length ? callerNumber : connectedCallNumber }}
+                </span>
+            </h6>
             <div class="form-group">
                 <input type="text" class="form-control" placeholder="Write Message" [(ngModel)]="chatMessage" *ngIf="callConnected"
                     (keydown.enter)="sendMessage(chatMessage, authService.userData)" required>

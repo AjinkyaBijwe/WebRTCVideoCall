@@ -115,7 +115,7 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-	callButton(requestCallNumber: any) {
+	async callButton(requestCallNumber: any) {
         const callNumber = requestCallNumber.toString();
         this.errorMessage = '';
         this.infoMessage = '';
@@ -135,46 +135,52 @@ export class DashboardComponent implements OnInit {
         this.activeDataConnection.on('error', () => {
             this.hangUpAfterEvent('Peer Connection Error', true);
         });
-        navigator.getUserMedia({video: true, audio: true}, (myStream: MediaStream) => {
-            this.myCallStream = myStream;
-            this.localVideoStream.nativeElement.srcObject = myStream;
-            this.activeMediaConnection = this.peer.call(callNumber, myStream);
-            this.activeMediaConnection.on('stream', (remoteStream) => {
-                this.remoteVideoStream.nativeElement.srcObject = remoteStream;
-            });
-            this.activeMediaConnection.on('close', () => {
-                this.hangUpAfterEvent('Active Call Closed', false);
-            });
-            this.activeMediaConnection.on('error', () => {
-                this.hangUpAfterEvent('Active Call Error', true);
-            });
-        }, (err) => {
+        try {
+            const myStream: MediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            if (myStream) {
+                this.myCallStream = myStream;
+                this.localVideoStream.nativeElement.srcObject = myStream;
+                this.activeMediaConnection = this.peer.call(callNumber, myStream);
+                this.activeMediaConnection.on('stream', (remoteStream) => {
+                    this.remoteVideoStream.nativeElement.srcObject = remoteStream;
+                });
+                this.activeMediaConnection.on('close', () => {
+                    this.hangUpAfterEvent('Active Call Closed', false);
+                });
+                this.activeMediaConnection.on('error', () => {
+                    this.hangUpAfterEvent('Active Call Error', true);
+                });
+            }
+        } catch(err) {
             this.hangUpAfterEvent('Failed to get local stream', true);
-        });
+        }
 	}
 
-    answerCall() {
-        navigator.getUserMedia({ video: true, audio: true }, (myStream: MediaStream) => {
-            this.myCallStream = myStream;
-            this.callerNumber = this.receivingMediaConnection.peer;
-            this.localVideoStream.nativeElement.srcObject = myStream;
-            this.receivingMediaConnection.answer(myStream);
-            this.receivingMediaConnection.on('stream', (remoteStream) => {
-                this.callingAudio.pause();
-                this.incomingCall = false;
-                this.callConnected = true;
-                this.remoteVideoStream.nativeElement.srcObject = remoteStream;
-            });
-            this.receivingMediaConnection.on('close', () => {
-                this.hangUpAfterEvent('Receiving Call Closed', false);
-            })
-            this.receivingMediaConnection.on('error', () => {
-                this.incomingCall = false;
-                this.hangUpAfterEvent('Receiving Call Error', true);
-            })
-        }, () => {
+    async answerCall() {
+        try {
+            const answerStream: MediaStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            if (answerStream) {
+                this.myCallStream = answerStream;
+                this.callerNumber = this.receivingMediaConnection.peer;
+                this.localVideoStream.nativeElement.srcObject = answerStream;
+                this.receivingMediaConnection.answer(answerStream);
+                this.receivingMediaConnection.on('stream', (remoteStream) => {
+                    this.callingAudio.pause();
+                    this.incomingCall = false;
+                    this.callConnected = true;
+                    this.remoteVideoStream.nativeElement.srcObject = remoteStream;
+                });
+                this.receivingMediaConnection.on('close', () => {
+                    this.hangUpAfterEvent('Receiving Call Closed', false);
+                })
+                this.receivingMediaConnection.on('error', () => {
+                    this.incomingCall = false;
+                    this.hangUpAfterEvent('Receiving Call Error', true);
+                })
+            }
+        } catch(err) {
             this.hangUpAfterEvent('Failed to get Remote Stream', true);
-        });
+        }
     }
 
     hangUp() {
