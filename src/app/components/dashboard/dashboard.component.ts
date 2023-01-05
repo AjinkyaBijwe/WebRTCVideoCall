@@ -64,14 +64,14 @@ export class DashboardComponent implements OnInit {
 
   loadSounds() {
     this.callingAudio = new Audio();
-    this.callingAudio.src = '../assets/audio/calling.mp3';
+    this.callingAudio.src = './assets/audio/calling.mp3';
     this.callingAudio.load();
     this.callingAudio.addEventListener('ended', () => {
       this.callingAudio.currentTime = 0;
       this.callingAudio.play();
     }, false);
     this.messageAudio = new Audio();
-    this.messageAudio.src = '../assets/audio/message.mp3';
+    this.messageAudio.src = './assets/audio/message.mp3';
     this.messageAudio.load();
   }
 
