@@ -1,15 +1,20 @@
 import { Injectable } from '@angular/core';
+import { FirebaseApp, initializeApp } from 'firebase/app';
+import { AppCheck, AppCheckTokenResult, getToken, initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { GoogleAuthProvider } from 'firebase/auth';
 
 import { ActivatedRoute, Router } from "@angular/router";
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class AuthService {
+  app: FirebaseApp;
+  appCheck: AppCheck;
   userData: any = {
     uid: null,
     email: null,
@@ -18,7 +23,23 @@ export class AuthService {
     emailVerified: false
   }; // Save logged in user data
 
-  constructor(public afs: AngularFirestore, public afAuth: AngularFireAuth, public router: Router, public route: ActivatedRoute) {}
+  constructor(public afs: AngularFirestore, public afAuth: AngularFireAuth, public router: Router, public route: ActivatedRoute) {
+    this.app = initializeApp(environment.firebase);
+    this.appCheck = initializeAppCheck(this.app, {
+      provider: new ReCaptchaV3Provider(environment.captchaKey),
+      isTokenAutoRefreshEnabled: true
+    });
+  }
+
+  async getToken(): Promise<AppCheckTokenResult | undefined> {
+    let appCheckTokenResponse;
+    try {
+      appCheckTokenResponse = await getToken(this.appCheck);
+    } catch (err) {
+      return;
+    }
+    return appCheckTokenResponse;
+  }
 
   SignIn(email: any, password: any) {
     return this.afAuth.signInWithEmailAndPassword(email, password)
