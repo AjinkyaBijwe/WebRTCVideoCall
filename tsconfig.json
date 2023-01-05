@@ -2,24 +2,29 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2015",
-    "module": "es2020",
+    "target": "ES2022",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
+    "types": [
+      "@angular/localize"
+    ],
     "lib": [
-      "es2018",
+      "ES2022",
       "dom"
     ]
   },

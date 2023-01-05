@@ -16,14 +16,14 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { VerifyEmailComponent } from './components/verify-email/verify-email.component';
 
 // Firebase services + enviorment module
-import { AngularFireModule } from "@angular/fire";
-import { AngularFireAuthModule } from "@angular/fire/auth";
-import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { AngularFireModule } from "@angular/fire/compat";
+import { AngularFireAuthModule } from "@angular/fire/compat/auth";
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { environment } from '../environments/environment';
 
 // Auth service
 import { AuthService } from "./shared/services/auth.service";
-import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbCollapseModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 
 @NgModule({
@@ -42,7 +42,8 @@ import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
     AngularFireAuthModule,
     AngularFirestoreModule,
     FormsModule,
-    NgbCollapseModule
+    NgbCollapseModule,
+    NgbModule
   ],
   providers: [AuthService],
   bootstrap: [AppComponent]

@@ -1,46 +1,45 @@
 <form class="d-flex justify-content-center align-items-center flex-column login-form" name="userLoginForm" #userLoginForm="ngForm" novalidate>
-	<h4 class="login-logo mb-2">
-        <i class="fas fa-video mr-2"></i>
-        VideoWebRTC
-    </h4>
-    <div class="login-block">
-		<h5>Sign In</h5>
-		<div class="form-group">
-			<input type="text" class="form-control" placeholder="Email" name="email" #email="ngModel" 
-            [(ngModel)]="loginForm.email" required email (ngModelChange)="authService.getValidationMessage(email)">
-            <div class="validation-message">{{ email.errors && email.errors.validationMessage }}</div>
-		</div>
+  <h4 class="login-logo mb-2">
+    <i class="fas fa-video me-2"></i>
+    VideoWebRTC
+  </h4>
+  <div class="login-block">
+    <h5>Sign In</h5>
+    <div class="form-group">
+      <input type="text" class="form-control" placeholder="Email" name="email" #email="ngModel" 
+      [(ngModel)]="loginForm.email" required email (ngModelChange)="authService.getValidationMessage(email)">
+      <div class="validation-message">{{ email?.errors?.['validationMessage'] }}</div>
+    </div>
 
-		<div class="form-group">
-			<input type="password" class="form-control" placeholder="Password" name="password" #password="ngModel"
-            [(ngModel)]="loginForm.password" required (ngModelChange)="authService.getValidationMessage(password)">
-            <div class="validation-message">{{ password.errors && password.errors.validationMessage }}</div>
-		</div>
+    <div class="form-group">
+      <input type="password" class="form-control" placeholder="Password" name="password" #password="ngModel" 
+      [(ngModel)]="loginForm.password" required (ngModelChange)="authService.getValidationMessage(password)">
+      <div class="validation-message">{{ password?.errors?.['validationMessage'] }}</div>
+    </div>
 
-		<!-- Calling SignIn Api from AuthService -->
-		<div class="form-group">
-            <button type="button" class="btn btn-primary" [disabled]="userLoginForm.invalid" 
-                (click)="authService.SignIn(loginForm.email, loginForm.password)">
-                Sign In
-            </button>
-		</div>
+    <!-- Calling SignIn Api from AuthService -->
+    <div class="form-group">
+      <button type="button" class="btn btn-primary" [disabled]="userLoginForm.invalid" (click)="authService.SignIn(loginForm.email, loginForm.password)">
+        Sign In
+      </button>
+    </div>
 
-		<div class="form-group">
-            <div class="decorated"><span>OR</span></div>
-		</div>
+    <div class="form-group">
+      <div class="decorated"><span>OR</span></div>
+    </div>
 
-		<!-- Calling GoogleAuth Api from AuthService -->
-		<div class="form-group">
-			<button type="button" class="btn btn-danger" (click)="authService.GoogleAuth()">
-				<i class="fab fa-google mr-1"></i>
-				Log in with Google
-			</button>
-		</div>
-		<div class="form-group text-center">
-			<span routerLink="/forgot-password" class="link">Forgot Password?</span>
-		</div>
-        <div class="form-group text-center mb-0">
-            <span class="link" routerLink="/register-user">Don't have an account ? Sign Up</span>
-        </div>
-	</div>
+    <!-- Calling GoogleAuth Api from AuthService -->
+    <div class="form-group">
+      <button type="button" class="btn btn-danger" (click)="authService.GoogleAuth()">
+        <i class="fab fa-google me-1"></i>
+        Log in with Google
+      </button>
+    </div>
+    <div class="form-group text-center">
+      <span routerLink="/forgot-password" class="link">Forgot Password?</span>
+    </div>
+    <div class="form-group text-center mb-0">
+      <span class="link" routerLink="/register-user">Don't have an account ? Sign Up</span>
+    </div>
+  </div>
 </form>

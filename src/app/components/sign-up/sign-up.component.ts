@@ -4,19 +4,19 @@ import { AuthService } from "../../shared/services/auth.service";
 @Component({
   selector: 'app-sign-up',
   templateUrl: './sign-up.component.html',
-  styleUrls: ['./sign-up.component.css']
+  styleUrls: ['./sign-up.component.scss']
 })
 
 export class SignUpComponent implements OnInit {
-    registerForm: any;
+  registerForm: any;
 
-    constructor(public authService: AuthService) { }
+  constructor(public authService: AuthService) {}
 
-    ngOnInit() { 
-        this.registerForm = {
-            email: '',
-            password: ''
-        };
-    }
+  ngOnInit() {
+    this.registerForm = {
+      email: '',
+      password: ''
+    };
+  }
 
 }
