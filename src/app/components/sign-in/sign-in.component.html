@@ -19,7 +19,7 @@
 
     <!-- Calling SignIn Api from AuthService -->
     <div class="form-group">
-      <button type="button" class="btn btn-primary" [disabled]="userLoginForm.invalid" (click)="authService.SignIn(loginForm.email, loginForm.password)">
+      <button type="button" class="btn btn-primary" [disabled]="userLoginForm.invalid" (click)="authService.signIn(loginForm.email, loginForm.password)">
         Sign In
       </button>
     </div>

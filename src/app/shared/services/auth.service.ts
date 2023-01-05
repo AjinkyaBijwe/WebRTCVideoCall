@@ -41,8 +41,20 @@ export class AuthService {
     return appCheckTokenResponse;
   }
 
-  SignIn(email: any, password: any) {
-    return this.afAuth.signInWithEmailAndPassword(email, password)
+  checkToken() {
+    return new Promise(async (resolve, reject) => {
+      const token = await this.getToken();
+      if (!token) {
+        reject('No Token Re-Captcha Failed');
+      } else {
+        resolve(token);
+      }
+    });
+  }
+
+  signIn(email: any, password: any) {
+    this.checkToken().then(() => {
+      return this.afAuth.signInWithEmailAndPassword(email, password)
       .then((result: any) => {
         if (result.user && result.user.emailVerified) {
           this.SetUserData(result.user);
@@ -53,32 +65,47 @@ export class AuthService {
       }).catch((error: any) => {
         window.alert(error.message)
       })
+    }).catch((error: any) => {
+      console.error(error);
+    });
   }
 
-  SignUp(email: any, password: any) {
-    return this.afAuth.createUserWithEmailAndPassword(email, password)
+  signUp(email: any, password: any) {
+    this.checkToken().then(() => {
+      return this.afAuth.createUserWithEmailAndPassword(email, password)
       .then((result: any) => {
-        this.SendVerificationMail(result.user);
+        this.sendVerificationMail(result.user);
         this.SetUserData(result.user);
       }).catch((error: any) => {
         window.alert(error.message)
       })
+    }).catch((error: any) => {
+      console.error(error);
+    });
   }
 
-  SendVerificationMail(user: any) {
-    return user.sendEmailVerification()
+  sendVerificationMail(user: any) {
+    this.checkToken().then(() => {
+      return user.sendEmailVerification()
       .then(() => {
         this.router.navigate(['verify-email-address']);
       })
+    }).catch((error: any) => {
+      console.error(error);
+    });
   }
 
-  ForgotPassword(passwordResetEmail: any) {
-    return this.afAuth.sendPasswordResetEmail(passwordResetEmail)
+  forgotPassword(passwordResetEmail: any) {
+    this.checkToken().then(() => {
+      return this.afAuth.sendPasswordResetEmail(passwordResetEmail)
       .then(() => {
         window.alert('Password reset email sent, check your inbox.');
       }).catch((error: any) => {
         window.alert(error)
       })
+    }).catch((error: any) => {
+      console.error(error);
+    });
   }
 
   get isLoggedIn(): boolean {
@@ -91,7 +118,11 @@ export class AuthService {
   }
 
   GoogleAuth() {
-    return this.AuthLogin(new GoogleAuthProvider());
+    this.checkToken().then(() => {
+      return this.AuthLogin(new GoogleAuthProvider());
+    }).catch((error: any) => {
+      console.error(error);
+    });
   }
 
   AuthLogin(provider: any) {
