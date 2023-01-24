@@ -19,7 +19,7 @@ export class AuthService {
     uid: null,
     email: null,
     displayName: null,
-    photoURL: '../assets/dummy-user.png',
+    photoURL: './assets/dummy-user.png',
     emailVerified: false
   }; // Save logged in user data
 

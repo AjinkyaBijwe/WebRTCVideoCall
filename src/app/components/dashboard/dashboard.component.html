@@ -15,19 +15,18 @@
 <div class="container-xl">
   <div class="title-number justify-content-center align-items-center col-12 py-3 px-0">
     <div class="alert alert-success text-align-center m-0">
-      <h4 class="mb-0"><span class="number">{{ myNumber }}</span> is your phone number</h4>
-    </div>
-    <div class="alert alert-danger m-0 mt-3" *ngIf="errorMessage?.length">
-      {{ errorMessage }}
-    </div>
-    <div class="alert alert-info m-0 mt-3" *ngIf="infoMessage?.length">
-      {{ infoMessage }}
+      <h4 class="mb-0">
+        <span class="number">
+          {{ myNumber }}
+        </span> 
+        is your phone number
+      </h4>
     </div>
   </div>
   <div class="main-body row d-flex flex-wrap">
     <div class="main col col-xl-8 pl-xl-0 pr-xl-3 col-lg-8 pl-lg-0 pr-lg-3 col-12 pb-3 border-end">
       <h5 class="alert alert-primary d-flex align-items-center">
-        <i class="fa-solid  fa-video me-2"></i>
+        <i class="fa-solid fa-video me-2"></i>
         Video
       </h5>
       <div class="dialer d-flex">
@@ -77,9 +76,12 @@
         *ngIf="callConnected" (keydown.enter)="sendMessage(chatMessage, authService.userData)" required>
       </div>
       <div class="messages form-control" *ngIf="chatMessages.length">
-        <div class="message" [class.mb-2]="i !== chatMessages.length - 1" *ngFor="let message of chatMessages; let i = index" [class]="message.class">
+        <div class="message" [class.mb-2]="i !== chatMessages.length - 1" 
+          *ngFor="let message of chatMessages; let i = index" [class]="message.class">
           <div class="message-body">
-            <span class="user"><i class="fa fa-user me-2"></i>{{ message.user }} ({{ message.number }}) </span>
+            <span class="user"><i class="fa-solid fa-user-alt me-1"></i>
+              {{ message.user }} ({{ message.sentMessage ? 'You' : message.number }})
+            </span>
             <span> {{ message.text }} </span>
           </div>
         </div>

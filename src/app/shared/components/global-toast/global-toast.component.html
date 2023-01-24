@@ -1,0 +1,27 @@
+<ngb-toast *ngFor="let toast of sharedService.toasts" 
+  [class]="toast?.class" 
+  [autohide]="true" 
+  [delay]="7000"
+  (hidden)="sharedService.hideAlert(toast)">
+  <div class="row content">
+    <div class="row title">
+      <div class="row icon" *ngIf="toast?.iconClass">
+        <i [class]="toast?.iconClass"></i>
+      </div>
+      <div class="row text">{{toast.title}}</div>
+      <div class="row close" (click)="sharedService.hideAlert(toast)">
+        <i class="fa-solid fa-xmark"></i>
+      </div>
+    </div>
+    <div class="row body" *ngIf="toast.body">
+      {{toast.body}}
+    </div>
+  </div>
+  <div class="row actions" *ngIf="toast?.buttons?.length">
+    <button class="row btn btn-sm" [class]="button?.class ? button?.class : 'btn-secondary'" 
+      *ngFor="let button of toast.buttons" (click)="button?.handler(toast)" [disabled]="button?.disabled">
+      <i [class]="button?.icon"></i>
+      {{ button?.text }}
+    </button>
+  </div>
+</ngb-toast>

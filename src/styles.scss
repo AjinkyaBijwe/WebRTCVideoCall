@@ -74,10 +74,10 @@ h6 {
     cursor: pointer;
     font-size: 1em;
     font-weight: 500;
-    color: var(--gray-dark);
+    color: var(--bs-gray-800);
   
     &:hover {
-      color: var(--blue);
+      color: var(--bs-blue);
       text-decoration: underline;
     }
     
@@ -98,7 +98,7 @@ h6 {
     content: '';
     position: absolute;
     top: 50%;
-    border-bottom: 2px solid var(--gray-dark);
+    border-bottom: 2px solid var(--bs-gray-800);
     width: 140px;
     margin: 0 20px;
   }
@@ -118,7 +118,7 @@ h6 {
   font-size: 12px;
   bottom: 0px;
   font-weight: 500;
-  color: var(--red);
+  color: var(--bs-red);
   text-transform: capitalize;
 }
 
@@ -141,6 +141,103 @@ h6 {
 
     img {
       width: 2rem;
+    }
+  }
+}
+
+ngb-toast.toast {
+  width: 40rem;
+  border-radius: 0.45rem;
+  opacity: 0.95;
+
+  .row {
+    --bs-gutter-x: 0;
+  }
+
+  &.success {
+    background: var(--bs-green);
+    color: var(--bs-white);
+  }
+
+  &.warning {
+    background: var(--bs-orange);
+    color: var(--bs-white);
+  }
+
+  &.info {
+    background: var(--bs-primary);
+    color: var(--bs-white);
+  }
+
+  &.error {
+    background: var(--bs-red);
+    color: var(--bs-white);
+  }
+
+  .toast-body {
+    padding: 1rem;
+    position: relative;
+    --bs-gutter-x: 0;
+
+    .content {
+
+      .title {
+        position: relative;
+        align-items: center;
+
+        .icon {
+          font-size: 1.1rem;
+          margin-right: 1rem;
+          width: auto;
+          margin-top: 0.1rem;
+        }
+
+        .text {
+          text-transform: uppercase;
+          font-weight: 600;
+          font-size: 0.9rem;
+          margin-right: 1.25rem;
+          width: calc(100% - 4.25rem);
+        }
+        
+        .close {
+          font-size: 1.25rem;
+          cursor: pointer;
+          width: auto;
+        }
+      }
+
+      .body {
+        margin-top: 0.75rem;
+        font-weight: 600;
+        word-break: break-word;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+      }
+    }
+
+    .actions {
+      margin-top: 0.75rem;
+      justify-content: flex-end;
+
+      .btn {
+        padding: 0.35rem 0.75rem;
+        width: auto;
+        border-radius: 0.45rem;
+        font-size: 0.9rem;
+        margin-right: 1rem;
+
+        &:last-child {
+          margin-right: 0;
+        }
+
+        i {
+          width: auto;
+          margin-right: 0.5rem;
+          display: flex;
+          align-items: center;
+        }
+      }
     }
   }
 }

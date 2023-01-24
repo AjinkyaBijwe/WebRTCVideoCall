@@ -4,7 +4,7 @@
 
 .user-logo {
   display: flex;
-  color: var(--white);
+  color: var(--bs-white);
   align-items: center;
 }
 
@@ -14,7 +14,7 @@
 }
 
 .title-number .number {
-  color: var(--danger);
+  color: var(--bs-danger);
   text-decoration: underline;
 }
 
@@ -39,7 +39,7 @@
 
 .messages .message .message-body .user {
   font-weight: 500;
-  color: var(--blue);
+  color: var(--bs-blue);
 }
 
 .messages .message.received-message {
@@ -53,7 +53,7 @@
 }
 
 .messages .message.received-message .message-body .user {
-  color: var(--red);
+  color: var(--bs-red);
 }
 
 .dialer .input-group {
@@ -67,7 +67,6 @@
 .videos .local-video {
   width: 100%;
   height: 100%;
-  border: 2px solid var(--bs-primary);
   border-radius: 0.55rem;
   display: flex;
 }
@@ -75,16 +74,16 @@
 .videos .local-video video {
   width: 100%;
   height: 100%;
-  border: 4px solid var(--green);
+  border: 2px solid var(--bs-green);
 }
 
 .videos .remote-video video {
   position: absolute;
-  width: 25%;
-  max-height: 25%;
-  border: 4px solid var(--yellow);
-  right: 20px;
-  bottom: 25px;
+  width: 20%;
+  max-height: 20%;
+  border: 2px solid var(--bs-yellow);
+  right: 2rem;
+  bottom: 2rem;
 }
 
 .videos .actions {

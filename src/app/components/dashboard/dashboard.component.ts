@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
 import { Peer, DataConnection, MediaConnection } from "peerjs";
 import fscreen from 'fscreen';
+import { SharedService } from 'src/app/shared/services/shared.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,14 +34,10 @@ export class DashboardComponent implements OnInit {
   })
   fullScreen!: ElementRef;
   peer!: Peer;
-  errorMessage: string = '';
-  errorTimeout: any;
-  infoMessage: string = '';
   activeDataConnection!: DataConnection;
   activeMediaConnection!: MediaConnection;
   receivingDataConnection!: DataConnection;
   receivingMediaConnection!: MediaConnection;
-  infoTimeout: any;
   hasFullscreenSupport: boolean = false;
   isFullscreen: any;
   incomingCall: boolean = false;
@@ -48,17 +45,17 @@ export class DashboardComponent implements OnInit {
   callingAudio!: HTMLAudioElement;
   messageAudio: any;
 
-  constructor(public authService: AuthService, public afAuth: AngularFireAuth, public router: Router) {}
+  constructor(public authService: AuthService, public afAuth: AngularFireAuth, public router: Router, public sharedService: SharedService) {}
 
   ngOnInit() {
     this.hasFullscreenSupport = fscreen.fullscreenEnabled;
     if (this.hasFullscreenSupport) {
       fscreen.addEventListener('fullscreenchange', () => {
-        this.isFullscreen = fscreen.fullscreenElement?true : false;
+        this.isFullscreen = fscreen.fullscreenElement ? true : false;
       })
     }
     this.generateNumber();
-    this.checkincomingCall();
+    this.checkIncomingCall();
     this.loadSounds();
   }
 
@@ -75,15 +72,15 @@ export class DashboardComponent implements OnInit {
     this.messageAudio.load();
   }
 
-  checkincomingCall() {
+  checkIncomingCall() {
     this.peer.on('connection', (conn) => {
       this.receivingDataConnection = conn;
       conn.on('data', (data: any) => {
         data.class = 'received-message';
+        data.sentMessage = false;
         this.chatMessages.unshift(data);
         this.messageAudio.play();
       });
-      // conn.on('open', () => {})
       conn.on('close', () => {
         this.hangUpAfterEvent('Call Disconnected by User', false);
       })
@@ -122,11 +119,10 @@ export class DashboardComponent implements OnInit {
 
   async callButton(requestCallNumber: any) {
     const callNumber = requestCallNumber.toString();
-    this.errorMessage = '';
-    this.infoMessage = '';
     this.activeDataConnection = this.peer.connect(callNumber);
     this.activeDataConnection.on('data', (data: any) => {
       data.class = 'received-message';
+      data.sentMessage = false;
       this.chatMessages.unshift(data);
       this.messageAudio.play();
     });
@@ -224,7 +220,8 @@ export class DashboardComponent implements OnInit {
         text,
         user: user.displayName,
         number: this.myNumber,
-        class: 'sent-message'
+        class: 'sent-message',
+        sentMessage: true
       };
       this.chatMessages.unshift(message);
       this.messageAudio.play();
@@ -243,21 +240,17 @@ export class DashboardComponent implements OnInit {
       this.hangUp();
     }, 500);
     if (error) {
-      this.errorMessage = message;
-      if (this.errorTimeout) {
-        clearTimeout(this.errorTimeout);
-      }
-      this.errorTimeout = setTimeout(() => {
-        this.errorMessage = ''
-      }, 5000);
+      this.sharedService.showAlert({
+        class: 'error',
+        title: message,
+        iconClass: 'fa-solid fa-phone'
+      });
     } else {
-      this.infoMessage = message;
-      if (this.infoTimeout) {
-        clearTimeout(this.errorTimeout);
-      }
-      this.infoTimeout = setTimeout(() => {
-        this.infoMessage = ''
-      }, 5000);
+      this.sharedService.showAlert({
+        class: 'info',
+        title: message,
+        iconClass: 'fa-solid fa-phone'
+      });
     }
   }
 
@@ -277,13 +270,11 @@ export class DashboardComponent implements OnInit {
         fscreen.exitFullscreen(elem);
       }
     } else {
-      this.errorMessage = 'Full Screen Not Supported. Please Try Disabling Adblocker or Other Extensions';
-      if (this.errorTimeout) {
-        clearTimeout(this.errorTimeout);
-      }
-      this.errorTimeout = setTimeout(() => {
-        this.errorMessage = ''
-      }, 5000);
+      this.sharedService.showAlert({
+        class: 'error',
+        title: `Full Screen Not Supported. Please Try Disabling Adblocker or Other Extensions`,
+        iconClass: 'fa-solid fa-phone'
+      });
     }
   }
 }

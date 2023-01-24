@@ -24,9 +24,10 @@ import { environment } from '../environments/environment';
 
 // Auth service
 import { AuthService } from "./shared/services/auth.service";
-import { NgbCollapseModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppCheckInterceptor } from './interceptors/app-check.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { SharedModule } from './shared/shared.module';
 
 
 @NgModule({
@@ -45,7 +46,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
     AngularFireAuthModule,
     AngularFirestoreModule,
     FormsModule,
-    NgbCollapseModule,
+    SharedModule,
     NgbModule
   ],
   providers: [
