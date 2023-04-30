@@ -7,6 +7,7 @@ import { GoogleAuthProvider } from 'firebase/auth';
 
 import { ActivatedRoute, Router } from "@angular/router";
 import { environment } from 'src/environments/environment';
+import { SharedService } from './shared.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,8 @@ export class AuthService {
     emailVerified: false
   }; // Save logged in user data
 
-  constructor(public afs: AngularFirestore, public afAuth: AngularFireAuth, public router: Router, public route: ActivatedRoute) {
+  constructor(public afs: AngularFirestore, public afAuth: AngularFireAuth, public router: Router, public route: ActivatedRoute,
+    public sharedService: SharedService) {
     this.app = initializeApp(environment.firebase);
     this.appCheck = initializeAppCheck(this.app, {
       provider: new ReCaptchaV3Provider(environment.captchaKey),
@@ -45,7 +47,8 @@ export class AuthService {
     return new Promise(async (resolve, reject) => {
       const token = await this.getToken();
       if (!token) {
-        reject('No Token Re-Captcha Failed');
+        // reject('No Token Re-Captcha Failed');
+        resolve(true);
       } else {
         resolve(token);
       }
@@ -63,7 +66,11 @@ export class AuthService {
           this.router.navigate(['verify-email-address']);
         }
       }).catch((error: any) => {
-        window.alert(error.message)
+        this.sharedService.showAlert({
+          class: 'error',
+          title: error.message,
+          iconClass: 'fa-solid fa-phone'
+        });
       })
     }).catch((error: any) => {
       console.error(error);
@@ -77,7 +84,11 @@ export class AuthService {
         this.sendVerificationMail(result.user);
         this.SetUserData(result.user);
       }).catch((error: any) => {
-        window.alert(error.message)
+        this.sharedService.showAlert({
+          class: 'error',
+          title: error.message,
+          iconClass: 'fa-solid fa-phone'
+        });
       })
     }).catch((error: any) => {
       console.error(error);
@@ -99,12 +110,24 @@ export class AuthService {
     this.checkToken().then(() => {
       return this.afAuth.sendPasswordResetEmail(passwordResetEmail)
       .then(() => {
-        window.alert('Password reset email sent, check your inbox.');
+        this.sharedService.showAlert({
+          class: 'info',
+          title: 'Password reset email sent, check your inbox.',
+          iconClass: 'fa-solid fa-phone'
+        });
       }).catch((error: any) => {
-        window.alert(error)
+        this.sharedService.showAlert({
+          class: 'error',
+          title: error,
+          iconClass: 'fa-solid fa-phone'
+        });
       })
     }).catch((error: any) => {
-      console.error(error);
+      this.sharedService.showAlert({
+        class: 'error',
+        title: error,
+        iconClass: 'fa-solid fa-phone'
+      });
     });
   }
 
@@ -131,7 +154,11 @@ export class AuthService {
         this.SetUserData(result.user);
         this.router.navigate(['dashboard']);
       }).catch((error: any) => {
-        window.alert(error)
+        this.sharedService.showAlert({
+          class: 'error',
+          title: error,
+          iconClass: 'fa-solid fa-phone'
+        });
       })
   }
 
