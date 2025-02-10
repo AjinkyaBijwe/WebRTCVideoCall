@@ -64,10 +64,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "videoWebRTC:build:production"
+              "buildTarget": "videoWebRTC:build:production"
             },
             "development": {
-              "browserTarget": "videoWebRTC:build:development"
+              "buildTarget": "videoWebRTC:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -75,7 +75,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "videoWebRTC:build"
+            "buildTarget": "videoWebRTC:build"
           }
         },
         "test": {
