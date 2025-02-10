@@ -2,14 +2,14 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
-import { Peer, DataConnection, MediaConnection } from "peerjs";
+import { Peer, DataConnection, MediaConnection } from 'peerjs';
 import fscreen from 'fscreen';
 import { SharedService } from 'src/app/shared/services/shared.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit {
   showSidebar: boolean = true;
@@ -22,15 +22,15 @@ export class DashboardComponent implements OnInit {
   callerNumber: string = '';
   callConnected: boolean = false;
   @ViewChild('localVideoStream', {
-    static: true
+    static: true,
   })
   localVideoStream!: ElementRef;
   @ViewChild('remoteVideoStream', {
-    static: true
+    static: true,
   })
   remoteVideoStream!: ElementRef;
   @ViewChild('fullScreen', {
-    static: true
+    static: true,
   })
   fullScreen!: ElementRef;
   peer!: Peer;
@@ -45,163 +45,203 @@ export class DashboardComponent implements OnInit {
   callingAudio!: HTMLAudioElement;
   messageAudio: any;
 
-  constructor(public authService: AuthService, public afAuth: AngularFireAuth, public router: Router, public sharedService: SharedService) {}
+  constructor(
+    public authService: AuthService,
+    public afAuth: AngularFireAuth,
+    public router: Router,
+    public sharedService: SharedService
+  ) {}
 
   ngOnInit() {
-    this.hasFullscreenSupport = fscreen.fullscreenEnabled;
-    if (this.hasFullscreenSupport) {
-      fscreen.addEventListener('fullscreenchange', () => {
-        this.isFullscreen = fscreen.fullscreenElement ? true : false;
-      })
-    }
+    this.initializeFullscreenSupport();
     this.generateNumber();
     this.checkIncomingCall();
     this.loadSounds();
   }
 
+  initializeFullscreenSupport() {
+    this.hasFullscreenSupport = fscreen.fullscreenEnabled;
+    if (this.hasFullscreenSupport) {
+      fscreen.addEventListener('fullscreenchange', () => {
+        this.isFullscreen = !!fscreen.fullscreenElement;
+      });
+    }
+  }
+
   loadSounds() {
-    this.callingAudio = new Audio();
-    this.callingAudio.src = './assets/audio/calling.mp3';
-    this.callingAudio.load();
-    this.callingAudio.addEventListener('ended', () => {
-      this.callingAudio.currentTime = 0;
-      this.callingAudio.play();
-    }, false);
-    this.messageAudio = new Audio();
-    this.messageAudio.src = './assets/audio/message.mp3';
-    this.messageAudio.load();
+    this.callingAudio = this.createAudio('./assets/audio/calling.mp3', true);
+    this.messageAudio = this.createAudio('./assets/audio/message.mp3', false);
+  }
+
+  createAudio(src: string, loop: boolean): HTMLAudioElement {
+    const audio = new Audio();
+    audio.src = src;
+    audio.load();
+    if (loop) {
+      audio.addEventListener(
+        'ended',
+        () => {
+          audio.currentTime = 0;
+          audio.play();
+        },
+        false
+      );
+    }
+    return audio;
   }
 
   checkIncomingCall() {
-    this.peer.on('connection', (conn) => {
-      this.receivingDataConnection = conn;
-      conn.on('data', (data: any) => {
-        data.class = 'received-message';
-        data.sentMessage = false;
-        this.chatMessages.unshift(data);
-        this.messageAudio.play();
-      });
-      conn.on('close', () => {
-        this.hangUpAfterEvent('Call Disconnected by User', false);
-      })
-      conn.on('error', () => {
-        this.hangUpAfterEvent('Incoming Connection Error', true);
-      })
+    this.peer.on('connection', (conn: DataConnection) => {
+      this.handleDataConnection(conn);
     });
+
     this.peer.on('disconnected', () => {
       this.hangUpAfterEvent('Peer Disconnected', false);
-    })
+    });
+
     this.peer.on('error', () => {
       this.hangUpAfterEvent('Number is Incorrect', true);
-    })
+    });
 
-    // Call User Listen
-    this.peer.on('call', (call) => {
-      this.receivingMediaConnection = call;
-      this.incomingCall = true;
-      this.callingAudio.play();
+    this.peer.on('call', (call: MediaConnection) => {
+      this.handleIncomingCall(call);
     });
   }
 
-  generateNumber() {
-    this.myNumber = (Math.floor(Math.random() * 90000) + 10000);
-    const myNumber = this.myNumber.toString();
-    this.peer = new Peer(myNumber, {
-      secure: true
+  handleDataConnection(conn: DataConnection) {
+    this.receivingDataConnection = conn;
+    conn.on('data', (data: any) => {
+      this.handleIncomingData(data);
     });
+    conn.on('close', () => {
+      this.hangUpAfterEvent('Call Disconnected by User', false);
+    });
+    conn.on('error', () => {
+      this.hangUpAfterEvent('Incoming Connection Error', true);
+    });
+  }
+
+  handleIncomingData(data: any) {
+    data.class = 'received-message';
+    data.sentMessage = false;
+    this.chatMessages.unshift(data);
+    this.messageAudio.play();
+  }
+
+  handleIncomingCall(call: MediaConnection) {
+    this.receivingMediaConnection = call;
+    this.incomingCall = true;
+    this.callingAudio.play();
+  }
+
+  generateNumber() {
+    this.myNumber = Math.floor(Math.random() * 90000) + 10000;
+    this.peer = new Peer(this.myNumber.toString(), { secure: true });
   }
 
   async callButton(requestCallNumber: any) {
     const callNumber = requestCallNumber.toString();
     this.activeDataConnection = this.peer.connect(callNumber);
-    this.activeDataConnection.on('data', (data: any) => {
-      data.class = 'received-message';
-      data.sentMessage = false;
-      this.chatMessages.unshift(data);
-      this.messageAudio.play();
-    });
-    this.activeDataConnection.on('open', () => {
-      this.connectedCallNumber = requestCallNumber;
-      this.callConnected = true;
-    });
-    this.activeDataConnection.on('close', () => {
-      this.hangUpAfterEvent('User Call Ended', false);
-    });
-    this.activeDataConnection.on('error', () => {
-      this.hangUpAfterEvent('Peer Connection Error', true);
-    });
+    this.setupDataConnectionHandlers(
+      this.activeDataConnection,
+      requestCallNumber
+    );
+
     try {
-      const myStream: MediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
+      const myStream = await this.getUserMediaStream();
       if (myStream) {
-        this.myCallStream = myStream;
-        this.localVideoStream.nativeElement.srcObject = myStream;
-        this.activeMediaConnection = this.peer.call(callNumber, myStream);
-        this.activeMediaConnection.on('stream', (remoteStream: any) => {
-          this.remoteVideoStream.nativeElement.srcObject = remoteStream;
-        });
-        this.activeMediaConnection.on('close', () => {
-          this.hangUpAfterEvent('Active Call Closed', false);
-        });
-        this.activeMediaConnection.on('error', () => {
-          this.hangUpAfterEvent('Active Call Error', true);
-        });
+        this.setupMediaConnection(callNumber, myStream);
       }
     } catch (err) {
       this.hangUpAfterEvent('Failed to get local stream', true);
     }
   }
 
+  setupDataConnectionHandlers(conn: DataConnection, requestCallNumber: any) {
+    conn.on('data', (data: any) => {
+      this.handleIncomingData(data);
+    });
+    conn.on('open', () => {
+      this.connectedCallNumber = requestCallNumber;
+      this.callConnected = true;
+    });
+    conn.on('close', () => {
+      this.hangUpAfterEvent('User Call Ended', false);
+    });
+    conn.on('error', () => {
+      this.hangUpAfterEvent('Peer Connection Error', true);
+    });
+  }
+
+  async getUserMediaStream(): Promise<MediaStream> {
+    return await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+  }
+
+  setupMediaConnection(callNumber: string, myStream: MediaStream) {
+    this.myCallStream = myStream;
+    this.localVideoStream.nativeElement.srcObject = myStream;
+    this.activeMediaConnection = this.peer.call(callNumber, myStream);
+    this.setupMediaConnectionHandlers(this.activeMediaConnection);
+  }
+
+  setupMediaConnectionHandlers(conn: MediaConnection) {
+    conn.on('stream', (remoteStream: any) => {
+      this.remoteVideoStream.nativeElement.srcObject = remoteStream;
+    });
+    conn.on('close', () => {
+      this.hangUpAfterEvent('Active Call Closed', false);
+    });
+    conn.on('error', () => {
+      this.hangUpAfterEvent('Active Call Error', true);
+    });
+  }
+
   async answerCall() {
     try {
-      const answerStream: MediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
+      const answerStream = await this.getUserMediaStream();
       if (answerStream) {
-        this.myCallStream = answerStream;
-        this.callerNumber = this.receivingMediaConnection.peer;
-        this.localVideoStream.nativeElement.srcObject = answerStream;
-        this.receivingMediaConnection.answer(answerStream);
-        this.receivingMediaConnection.on('stream', (remoteStream: any) => {
-          this.callingAudio.pause();
-          this.incomingCall = false;
-          this.callConnected = true;
-          this.remoteVideoStream.nativeElement.srcObject = remoteStream;
-        });
-        this.receivingMediaConnection.on('close', () => {
-          this.hangUpAfterEvent('Receiving Call Closed', false);
-        })
-        this.receivingMediaConnection.on('error', () => {
-          this.incomingCall = false;
-          this.hangUpAfterEvent('Receiving Call Error', true);
-        })
+        this.setupAnswerCall(answerStream);
       }
     } catch (err) {
       this.hangUpAfterEvent('Failed to get Remote Stream', true);
     }
   }
 
+  setupAnswerCall(answerStream: MediaStream) {
+    this.myCallStream = answerStream;
+    this.callerNumber = this.receivingMediaConnection.peer;
+    this.localVideoStream.nativeElement.srcObject = answerStream;
+    this.receivingMediaConnection.answer(answerStream);
+    this.setupMediaConnectionHandlers(this.receivingMediaConnection);
+    this.receivingMediaConnection.on('stream', (remoteStream: any) => {
+      this.callingAudio.pause();
+      this.incomingCall = false;
+      this.callConnected = true;
+      this.remoteVideoStream.nativeElement.srcObject = remoteStream;
+    });
+  }
+
   hangUp() {
-    if (this.activeDataConnection) {
-      this.activeDataConnection.close();
-    }
-    if (this.activeMediaConnection) {
-      this.activeMediaConnection.close();
-    }
-    if (this.receivingDataConnection) {
-      this.receivingDataConnection.close();
-    }
-    if (this.receivingMediaConnection) {
-      this.receivingMediaConnection.close();
-    }
-    if (this.myCallStream?.getTracks()?.length) {
-      this.myCallStream.getTracks().forEach((track: any) => {
-        track?.stop();
-      });
-    }
+    this.closeConnections();
+    this.stopLocalStream();
+    this.resetCallState();
+  }
+
+  closeConnections() {
+    this.activeDataConnection?.close();
+    this.activeMediaConnection?.close();
+    this.receivingDataConnection?.close();
+    this.receivingMediaConnection?.close();
+  }
+
+  stopLocalStream() {
+    this.myCallStream?.getTracks()?.forEach((track: any) => track?.stop());
+  }
+
+  resetCallState() {
     this.localVideoStream.nativeElement.srcObject = null;
     this.remoteVideoStream.nativeElement.srcObject = null;
     this.incomingCall = false;
@@ -210,22 +250,28 @@ export class DashboardComponent implements OnInit {
 
   sendMessage(text: string, user: any) {
     if (text?.length && user?.displayName?.length) {
-      const message = {
-        text,
-        user: user.displayName,
-        number: this.myNumber,
-        class: 'sent-message',
-        sentMessage: true
-      };
+      const message = this.createMessage(text, user.displayName);
       this.chatMessages.unshift(message);
       this.messageAudio.play();
       this.chatMessage = '';
-      if (this.callConnected && this.activeDataConnection) {
-        this.activeDataConnection.send(message);
-      }
-      if (this.callConnected && this.receivingDataConnection) {
-        this.receivingDataConnection.send(message);
-      }
+      this.sendMessageToConnections(message);
+    }
+  }
+
+  createMessage(text: string, displayName: string) {
+    return {
+      text,
+      user: displayName,
+      number: this.myNumber,
+      class: 'sent-message',
+      sentMessage: true,
+    };
+  }
+
+  sendMessageToConnections(message: any) {
+    if (this.callConnected) {
+      this.activeDataConnection?.send(message);
+      this.receivingDataConnection?.send(message);
     }
   }
 
@@ -233,19 +279,11 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => {
       this.hangUp();
     }, 500);
-    if (error) {
-      this.sharedService.showAlert({
-        class: 'error',
-        title: message,
-        iconClass: 'fa-solid fa-phone'
-      });
-    } else {
-      this.sharedService.showAlert({
-        class: 'info',
-        title: message,
-        iconClass: 'fa-solid fa-phone'
-      });
-    }
+    this.sharedService.showAlert({
+      class: error ? 'error' : 'info',
+      title: message,
+      iconClass: 'fa-solid fa-phone',
+    });
   }
 
   signOut() {
@@ -267,7 +305,7 @@ export class DashboardComponent implements OnInit {
       this.sharedService.showAlert({
         class: 'error',
         title: `Full Screen Not Supported. Please Try Disabling Adblocker or Other Extensions`,
-        iconClass: 'fa-solid fa-phone'
+        iconClass: 'fa-solid fa-phone',
       });
     }
   }
