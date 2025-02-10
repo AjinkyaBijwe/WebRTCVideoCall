@@ -148,6 +148,8 @@ firebase/compat/auth
 
 firebase/compat/firestore
 
+firebase/firestore
+
 fscreen
 MIT
 The MIT License (MIT)
