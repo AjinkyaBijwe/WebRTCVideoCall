@@ -1,36 +1,55 @@
 import { Injectable } from '@angular/core';
 import { FirebaseApp, initializeApp } from 'firebase/app';
-import { AppCheck, AppCheckTokenResult, getToken, initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { GoogleAuthProvider } from 'firebase/auth';
-
-import { ActivatedRoute, Router } from "@angular/router";
+import {
+  AppCheck,
+  AppCheckTokenResult,
+  getToken,
+  initializeAppCheck,
+  ReCaptchaV3Provider,
+} from 'firebase/app-check';
+import {
+  Auth,
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from 'firebase/auth';
+import { Firestore, getFirestore } from 'firebase/firestore';
+import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { SharedService } from './shared.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
 export class AuthService {
   app: FirebaseApp;
   appCheck: AppCheck;
+  auth: Auth;
+  firestore: Firestore;
   userData: any = {
     uid: null,
     email: null,
     displayName: null,
     photoURL: './assets/dummy-user.png',
-    emailVerified: false
+    emailVerified: false,
   }; // Save logged in user data
 
-  constructor(public afs: AngularFirestore, public afAuth: AngularFireAuth, public router: Router, public route: ActivatedRoute,
-    public sharedService: SharedService) {
+  constructor(
+    public router: Router,
+    public route: ActivatedRoute,
+    public sharedService: SharedService
+  ) {
     this.app = initializeApp(environment.firebase);
     this.appCheck = initializeAppCheck(this.app, {
       provider: new ReCaptchaV3Provider(environment.captchaKey),
-      isTokenAutoRefreshEnabled: true
+      isTokenAutoRefreshEnabled: true,
     });
+    this.auth = getAuth(this.app);
+    this.firestore = getFirestore(this.app);
   }
 
   async getToken(): Promise<AppCheckTokenResult | undefined> {
@@ -47,7 +66,6 @@ export class AuthService {
     return new Promise(async (resolve, reject) => {
       const token = await this.getToken();
       if (!token) {
-        // reject('No Token Re-Captcha Failed');
         resolve(true);
       } else {
         resolve(token);
@@ -55,80 +73,90 @@ export class AuthService {
     });
   }
 
-  signIn(email: any, password: any) {
-    this.checkToken().then(() => {
-      return this.afAuth.signInWithEmailAndPassword(email, password)
-      .then((result: any) => {
-        if (result.user && result.user.emailVerified) {
-          this.SetUserData(result.user);
-          this.router.navigate(['dashboard']);
-        } else {
-          this.router.navigate(['verify-email-address']);
-        }
-      }).catch((error: any) => {
-        this.sharedService.showAlert({
-          class: 'error',
-          title: error.message,
-          iconClass: 'fa-solid fa-phone'
-        });
+  signIn(email: string, password: string) {
+    this.checkToken()
+      .then(() => {
+        return signInWithEmailAndPassword(this.auth, email, password)
+          .then((result) => {
+            if (result.user && result.user.emailVerified) {
+              this.SetUserData(result.user);
+              this.router.navigate(['dashboard']);
+            } else {
+              this.router.navigate(['verify-email-address']);
+            }
+          })
+          .catch((error) => {
+            this.sharedService.showAlert({
+              class: 'error',
+              title: error.message,
+              iconClass: 'fa-solid fa-phone',
+            });
+          });
       })
-    }).catch((error: any) => {
-      console.error(error);
-    });
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
-  signUp(email: any, password: any) {
-    this.checkToken().then(() => {
-      return this.afAuth.createUserWithEmailAndPassword(email, password)
-      .then((result: any) => {
-        this.sendVerificationMail(result.user);
-        this.SetUserData(result.user);
-      }).catch((error: any) => {
-        this.sharedService.showAlert({
-          class: 'error',
-          title: error.message,
-          iconClass: 'fa-solid fa-phone'
-        });
+  signUp(email: string, password: string) {
+    this.checkToken()
+      .then(() => {
+        return createUserWithEmailAndPassword(this.auth, email, password)
+          .then((result) => {
+            this.sendVerificationMail(result.user);
+            this.SetUserData(result.user);
+          })
+          .catch((error) => {
+            this.sharedService.showAlert({
+              class: 'error',
+              title: error.message,
+              iconClass: 'fa-solid fa-phone',
+            });
+          });
       })
-    }).catch((error: any) => {
-      console.error(error);
-    });
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   sendVerificationMail(user: any) {
-    this.checkToken().then(() => {
-      return user.sendEmailVerification()
+    this.checkToken()
       .then(() => {
-        this.router.navigate(['verify-email-address']);
+        return sendEmailVerification(user).then(() => {
+          this.router.navigate(['verify-email-address']);
+        });
       })
-    }).catch((error: any) => {
-      console.error(error);
-    });
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
-  forgotPassword(passwordResetEmail: any) {
-    this.checkToken().then(() => {
-      return this.afAuth.sendPasswordResetEmail(passwordResetEmail)
+  forgotPassword(passwordResetEmail: string) {
+    this.checkToken()
       .then(() => {
-        this.sharedService.showAlert({
-          class: 'info',
-          title: 'Password reset email sent, check your inbox.',
-          iconClass: 'fa-solid fa-phone'
-        });
-      }).catch((error: any) => {
+        return sendPasswordResetEmail(this.auth, passwordResetEmail)
+          .then(() => {
+            this.sharedService.showAlert({
+              class: 'info',
+              title: 'Password reset email sent, check your inbox.',
+              iconClass: 'fa-solid fa-phone',
+            });
+          })
+          .catch((error) => {
+            this.sharedService.showAlert({
+              class: 'error',
+              title: error.message,
+              iconClass: 'fa-solid fa-phone',
+            });
+          });
+      })
+      .catch((error) => {
         this.sharedService.showAlert({
           class: 'error',
-          title: error,
-          iconClass: 'fa-solid fa-phone'
+          title: error.message,
+          iconClass: 'fa-solid fa-phone',
         });
-      })
-    }).catch((error: any) => {
-      this.sharedService.showAlert({
-        class: 'error',
-        title: error,
-        iconClass: 'fa-solid fa-phone'
       });
-    });
   }
 
   get isLoggedIn(): boolean {
@@ -137,29 +165,32 @@ export class AuthService {
       user = JSON.parse(user);
       this.userData = user;
     }
-    return (user && user.emailVerified !== false) ? true : false;
+    return user && user.emailVerified !== false ? true : false;
   }
 
   GoogleAuth() {
-    this.checkToken().then(() => {
-      return this.AuthLogin(new GoogleAuthProvider());
-    }).catch((error: any) => {
-      console.error(error);
-    });
+    this.checkToken()
+      .then(() => {
+        return this.AuthLogin(new GoogleAuthProvider());
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   AuthLogin(provider: any) {
-    return this.afAuth.signInWithPopup(provider)
-      .then((result: any) => {
+    return signInWithPopup(this.auth, provider)
+      .then((result) => {
         this.SetUserData(result.user);
         this.router.navigate(['dashboard']);
-      }).catch((error: any) => {
+      })
+      .catch((error) => {
         this.sharedService.showAlert({
           class: 'error',
-          title: error,
-          iconClass: 'fa-solid fa-phone'
+          title: error.message,
+          iconClass: 'fa-solid fa-phone',
         });
-      })
+      });
   }
 
   SetUserData(user: any) {
@@ -168,22 +199,17 @@ export class AuthService {
       email: user.email,
       displayName: user.displayName ? user.displayName : user.email,
       photoURL: user.photoURL,
-      emailVerified: user.emailVerified
-    }
+      emailVerified: user.emailVerified,
+    };
     localStorage.setItem('WebRTCVideoCallUser', JSON.stringify(userData));
-    // const userRef: AngularFirestoreDocument < any > = this.afs.doc(`users/${user.uid}`);
-    // return userRef.set(userData, {
-    // 	merge: true
-    // }) 
-    // Uncomment If you want to store user in a document
   }
 
   SignOut() {
-    this.afAuth.signOut().then(() => {
+    this.auth.signOut().then(() => {
       this.userData = null;
       localStorage.removeItem('WebRTCVideoCallUser');
       this.router.navigate(['sign-in']);
-    })
+    });
   }
 
   getValidationMessage(input: any) {
